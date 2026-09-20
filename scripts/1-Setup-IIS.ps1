@@ -15,15 +15,15 @@
 
 [CmdletBinding()]
 param(
-    [string]$SiteName     = 'HealthCard',
-    [int]   $Port         = 80,
+    [string]$SiteName = 'HealthCard',
+    [int]   $Port = 80,
     [string]$PhysicalPath = 'C:\inetpub\HealthCard'
 )
 
 $ErrorActionPreference = 'Stop'
 
 function Step { param($m) Write-Host "`n==> $m" -ForegroundColor Cyan }
-function Ok   { param($m) Write-Host "    [ok] $m" -ForegroundColor Green }
+function Ok { param($m) Write-Host "    [ok] $m" -ForegroundColor Green }
 function Warn { param($m) Write-Host "    [!!] $m" -ForegroundColor Yellow }
 
 # --- 0. Elevation ---------------------------------------------------------------
@@ -50,13 +50,14 @@ if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContin
     New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Protocol TCP `
         -LocalPort $Port -Action Allow | Out-Null
     Ok "Created inbound rule for TCP $Port"
-} else {
+}
+else {
     Ok "Inbound rule for TCP $Port already exists"
 }
 
 # --- 3. Copy the files ----------------------------------------------------------
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$source   = Join-Path $repoRoot 'site'
+$source = Join-Path $repoRoot 'site'
 if (-not (Test-Path $source)) {
     throw "Could not find '$source'. Run this script from inside the extracted repository folder."
 }
@@ -110,10 +111,11 @@ Step "Requesting the site locally"
 try {
     $r = Invoke-WebRequest -Uri "http://localhost:$Port/" -UseBasicParsing -TimeoutSec 15
     Ok "HTTP $($r.StatusCode) from http://localhost:$Port/"
-} catch {
+}
+catch {
     Warn "Local request failed: $($_.Exception.Message)"
 }
 
 Write-Host "`nDeployed to $PhysicalPath on port $Port." -ForegroundColor Green
-Write-Host "The page will show a collector error until you run .\2-Collect-Status.ps1 — that is expected." -ForegroundColor Gray
-Write-Host "Your cloud's firewall must also allow port $Port before your laptop can reach it." -ForegroundColor Gray
+Write-Host "The page will show a collector error until you run .\2-Collect-Status.ps1 -- that is expected." -ForegroundColor Gray
+Write-Host "Your cloud firewall must also allow port $Port before your laptop can reach it." -ForegroundColor Gray
